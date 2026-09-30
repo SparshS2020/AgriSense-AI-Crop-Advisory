@@ -1,1 +1,2 @@
 - [Gemini access](gemini-access.md) — direct `GEMINI_API_KEY` is the fallback when managed AI integration provisioning is unavailable.
+- [Publish schema validation](publish-schema-validation.md) — compare both databases and recompute the diff before treating disposable-fork errors as SQL failures.
