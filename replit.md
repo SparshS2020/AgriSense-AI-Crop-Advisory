@@ -1,6 +1,6 @@
-# [Project name]
+# AgriSense AI
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+AgriSense AI helps farmers and agronomists manage farm context and generate practical, climate-aware crop advisories.
 
 ## Run & Operate
 
@@ -22,15 +22,23 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/agrisense/src/App.tsx` — frontend routes, authenticated shell, farm and advisory flows
+- `artifacts/agrisense/src/index.css` — field-notebook visual system and responsive layout
+- `artifacts/api-server/src/routes/` — auth, dashboard, farm, and advisory API routes
+- `artifacts/api-server/src/lib/advisory.ts` — Gemini generation with a conservative fallback
+- `lib/api-spec/openapi.yaml` — source of truth for generated API hooks and validation
+- `lib/db/src/schema/agrisense.ts` — users, farms, and advisory persistence
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Session authentication uses an HttpOnly JWT cookie signed with `SESSION_SECRET`; the brief explicitly requested JWT + bcrypt.
+- Farm and advisory queries always include the authenticated user ID for application-level tenant isolation.
+- AI generation uses the direct `GEMINI_API_KEY` path with a safe deterministic fallback when Gemini is unavailable.
+- The frontend uses generated Orval hooks from the OpenAPI contract rather than handwritten request types.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Users can register and sign in, create multiple farm profiles, submit a three-step advisory intake, view structured crop recommendations with confidence scores, browse advisory history, and regenerate reports.
 
 ## User preferences
 
@@ -38,7 +46,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After changing `lib/api-spec/openapi.yaml`, run `pnpm --filter @workspace/api-spec run codegen`.
+- Use `pnpm --filter @workspace/db run push` after changing `lib/db/src/schema/`.
+- Artifact builds need workflow-provided `PORT` and `BASE_PATH`; use the managed workflow for the normal preview.
 
 ## Pointers
 

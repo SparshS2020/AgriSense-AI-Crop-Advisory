@@ -10,6 +10,14 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: dashboard
+    description: Dashboard summaries
+  - name: farms
+    description: Farm profile management
+  - name: advisories
+    description: Crop advisory reports
 paths:
   /healthz:
     get:
@@ -24,6 +32,252 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [auth]
+      summary: Get the current session
+      responses:
+        "200":
+          description: Current session, or an anonymous session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Create a farmer account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Created session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "400":
+          description: Invalid registration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in to an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Created session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Sign out of the current session
+      responses:
+        "204":
+          description: Signed out
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /farms:
+    get:
+      operationId: listFarms
+      tags: [farms]
+      summary: List farms for the current user
+      responses:
+        "200":
+          description: Farm list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Farm"
+    post:
+      operationId: createFarm
+      tags: [farms]
+      summary: Add a farm profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmInput"
+      responses:
+        "201":
+          description: Farm created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Farm"
+  /farms/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getFarm
+      tags: [farms]
+      summary: Get one farm profile
+      responses:
+        "200":
+          description: Farm profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Farm"
+        "404":
+          description: Farm not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateFarm
+      tags: [farms]
+      summary: Update a farm profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmUpdate"
+      responses:
+        "200":
+          description: Updated farm
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Farm"
+    delete:
+      operationId: deleteFarm
+      tags: [farms]
+      summary: Delete a farm profile
+      responses:
+        "204":
+          description: Farm deleted
+  /advisories:
+    get:
+      operationId: listAdvisories
+      tags: [advisories]
+      summary: List advisory reports
+      parameters:
+        - name: farmId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        "200":
+          description: Advisory list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Advisory"
+    post:
+      operationId: createAdvisory
+      tags: [advisories]
+      summary: Generate a new crop advisory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdvisoryInput"
+      responses:
+        "201":
+          description: Generated advisory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Advisory"
+  /advisories/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getAdvisory
+      tags: [advisories]
+      summary: Get one advisory report
+      responses:
+        "200":
+          description: Advisory report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Advisory"
+        "404":
+          description: Advisory not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /advisories/{id}/regenerate:
+    post:
+      operationId: regenerateAdvisory
+      tags: [advisories]
+      summary: Generate a refreshed advisory from an existing report
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Refreshed advisory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Advisory"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +287,138 @@ components:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+      required: [id, name, email]
+    Session:
+      type: object
+      properties:
+        authenticated: { type: boolean }
+        user:
+          type: ["object", "null"]
+          properties:
+            id: { type: string }
+            name: { type: string }
+            email: { type: string, format: email }
+          required: [id, name, email]
+      required: [authenticated, user]
+    RegisterInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+      required: [name, email, password]
+    LoginInput:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+      required: [email, password]
+    Farm:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        location: { type: string }
+        areaHectares: { type: number }
+        primaryCrop: { type: string }
+        soilType: { type: string }
+        irrigation: { type: string }
+        createdAt: { type: string, format: date-time }
+      required: [id, name, location, areaHectares, primaryCrop, soilType, irrigation, createdAt]
+    FarmInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        location: { type: string, minLength: 2 }
+        areaHectares: { type: number, minimum: 0.1 }
+        primaryCrop: { type: string, minLength: 2 }
+        soilType: { type: string, minLength: 2 }
+        irrigation: { type: string, minLength: 2 }
+      required: [name, location, areaHectares, primaryCrop, soilType, irrigation]
+    FarmUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        location: { type: string, minLength: 2 }
+        areaHectares: { type: number, minimum: 0.1 }
+        primaryCrop: { type: string, minLength: 2 }
+        soilType: { type: string, minLength: 2 }
+        irrigation: { type: string, minLength: 2 }
+    AdvisoryInput:
+      type: object
+      properties:
+        farmId: { type: string }
+        cropStage: { type: string }
+        soilMoisture: { type: number, minimum: 0, maximum: 100 }
+        recentRainfallMm: { type: number, minimum: 0 }
+        temperatureC: { type: number }
+        pestPressure: { type: string }
+        budget: { type: string }
+        riskTolerance: { type: string }
+        notes: { type: string }
+      required: [farmId, cropStage, soilMoisture, recentRainfallMm, temperatureC, pestPressure, budget, riskTolerance]
+    Advisory:
+      type: object
+      properties:
+        id: { type: string }
+        farmId: { type: string }
+        farmName: { type: string }
+        crop: { type: string }
+        createdAt: { type: string, format: date-time }
+        confidence: { type: number, minimum: 0, maximum: 100 }
+        status: { type: string, enum: [ready, processing, needs-review] }
+        summary: { type: string }
+        recommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Recommendation"
+        weatherNote: { type: string }
+        riskNote: { type: string }
+      required: [id, farmId, farmName, crop, createdAt, confidence, status, summary, recommendations, weatherNote, riskNote]
+    Recommendation:
+      type: object
+      properties:
+        title: { type: string }
+        detail: { type: string }
+        timing: { type: string }
+        priority: { type: string, enum: [high, medium, low] }
+      required: [title, detail, timing, priority]
+    Dashboard:
+      type: object
+      properties:
+        farmCount: { type: integer }
+        advisoryCount: { type: integer }
+        averageConfidence: { type: number }
+        activeFarm:
+          type: ["object", "null"]
+          properties:
+            id: { type: string }
+            name: { type: string }
+            crop: { type: string }
+            location: { type: string }
+          required: [id, name, crop, location]
+        recentAdvisories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Advisory"
+        climateSignal:
+          type: object
+          properties:
+            label: { type: string }
+            detail: { type: string }
+            tone: { type: string, enum: [positive, neutral, caution] }
+          required: [label, detail, tone]
+      required: [farmCount, advisoryCount, averageConfidence, activeFarm, recentAdvisories, climateSignal]
 

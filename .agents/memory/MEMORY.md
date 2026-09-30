@@ -1,0 +1,1 @@
+- [Gemini access](gemini-access.md) — direct `GEMINI_API_KEY` is the fallback when managed AI integration provisioning is unavailable.

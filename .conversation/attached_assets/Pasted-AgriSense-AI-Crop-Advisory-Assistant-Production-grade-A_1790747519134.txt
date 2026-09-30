@@ -1,0 +1,51 @@
+AgriSense AI – Crop Advisory Assistant
+Production-grade, AI-powered crop advisory platform for farmers and agronomists.
+
+AgriSense AI helps farmers receive personalized, science-backed crop recommendations, fertilizer schedules, irrigation plans, pest/disease risk assessments, and climate-resilient advice — powered by Google Gemini and stored securely in PostgreSQL.
+
+Features
+Multi-tenant authentication (JWT + bcrypt, HttpOnly cookies)
+Farm profile management (multiple farms per user)
+Intelligent crop advisory form with soil, climate, pest, budget & risk inputs
+Google Gemini integration (@google/genai) for structured, validated JSON advice
+Full advisory history with confidence scores and regeneratable reports
+Row Level Security (RLS) for strict data isolation
+Zod validation on both client and server
+Mobile-first responsive UI (Tailwind CSS)
+Rate limiting on AI endpoints
+Health-check endpoint
+Tech Stack
+Layer	Technology
+Frontend	React.js (Vite) + React Router + Tailwind CSS
+Forms	React Hook Form + Zod
+Backend	Node.js + Express.js
+Database	Replit Postgres (PostgreSQL)
+AI	@google/genai (Gemini)
+Validation	Zod (shared schemas)
+Auth	JWT + bcryptjs
+Security	Helmet, CORS, RLS, rate limiting
+Project Structure
+/ ├── client/ # Vite + React frontend │ ├── src/ │ │ ├── components/ │ │ ├── pages/ │ │ ├── hooks/ │ │ ├── context/ │ │ ├── lib/ │ │ ├── App.jsx │ │ └── main.jsx │ ├── index.html │ ├── tailwind.config.js │ └── package.json ├── server/ # Express backend │ ├── src/ │ │ ├── routes/ │ │ ├── middleware/ │ │ ├── services/ │ │ ├── db/ │ │ ├── schemas/ │ │ ├── utils/ │ │ └── index.js │ └── package.json ├── shared/ # Optional shared Zod schemas ├── .env.example ├── package.json └── README.md
+
+Prerequisites
+Node.js 18+
+PostgreSQL (or Replit Postgres)
+Google Gemini API key (Get one here)
+Environment Variables
+Copy .env.example to .env (and also into server/.env if needed):
+
+# Server
+NODE_ENV=development
+PORT=3000
+DATABASE_URL=postgresql://username:password@host:5432/database
+# Auth
+JWT_SECRET=your-super-long-random-secret-at-least-32-chars
+JWT_EXPIRES_IN=7d
+COOKIE_SECRET=another-long-secret
+# Google Gemini
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-2.0-flash
+# Optional
+FRONTEND_URL=http://localhost:5173
+RATE_LIMIT_WINDOW_MS=3600000
+RATE_LIMIT_MAX=5
